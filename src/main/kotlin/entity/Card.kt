@@ -1,7 +1,12 @@
 package entity
 /**
- * represents a card that's initially unrevealed , has a value and a suit
+ * Data class for the main element of the 6 card Golf game : cards.
+ *
+ * It is characterized by a [CardSuit], a [CardValue] and a revealed status
+ *
+ * @property suit the suit of the card
+ * @property value the value of the card
+ * @property isRevealed whether the card is face up or not, initially set to false
  */
-class Card (var isRevealed: Boolean =false , val suit: CardSuit, val value: CardValue){
 
-}
+data class Card (var isRevealed: Boolean =false , val suit: CardSuit, val value: CardValue)
