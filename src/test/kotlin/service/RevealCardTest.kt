@@ -110,4 +110,17 @@ class RevealCardTest {
             rootService.playerActionService.revealCard(0)
         }
     }
+
+    /** Test revealing second card in MUST_REVEAL_ONE and going to MUST_END_TURN */
+    @Test
+    fun testRevealCardMustRevealOne() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.gameState = GameState.MUST_REVEAL_ONE
+
+        assertDoesNotThrow { rootService.playerActionService.revealCard(0) }
+        assertEquals(GameState.MUST_END_TURN, player.gameState)
+    }
 }

@@ -66,6 +66,19 @@ class EndGameTest {
         assertTrue(player.score >= 0)
     }
 
+    /** Test endGame with test mode deck */
+    @Test
+    fun testEndGameTestMode() {
+        rootService.currentGame = null
+        rootService.gameService.startNewGame(listOf("Alice", "Bob"), false, true)
+
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        assertDoesNotThrow { rootService.gameService.endGame() }
+        assertTrue(testRefreshable.refreshAfterGameWonCalled)
+    }
+
     /** Test ending the game with no game active */
     @Test
     fun testEndGameNoGame() {

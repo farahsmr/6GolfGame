@@ -84,4 +84,26 @@ class CheckRowsTest {
         // Test: Row was removed
         assertEquals(trainSizeBefore - 3, player.train.size)
     }
+
+    /** Test both rows removed when both have identical values */
+    @Test
+    fun testCheckRowsBothRowsRemoved() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[0]
+
+        // Set both rows to identical values
+        player.train[0] = Card(CardSuit.CLUBS, CardValue.ACE)
+        player.train[1] = Card(CardSuit.SPADES, CardValue.ACE)
+        player.train[2] = Card(CardSuit.HEARTS, CardValue.ACE)
+        player.train[3] = Card(CardSuit.CLUBS, CardValue.KING)
+        player.train[4] = Card(CardSuit.SPADES, CardValue.KING)
+        player.train[5] = Card(CardSuit.HEARTS, CardValue.KING)
+
+        assertDoesNotThrow { rootService.gameService.checkRows(player) }
+
+        // Both rows removed
+        assertEquals(0, player.train.size)
+    }
 }
