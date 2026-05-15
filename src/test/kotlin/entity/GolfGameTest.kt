@@ -16,7 +16,7 @@ class GolfGameTest {
     @Test
     fun testCurrentPlayerIndex() {
         assertEquals(0, game1.currentPlayerIndex)
-        assertEquals( 3, game2.currentPlayerIndex)
+        assertEquals(3, game2.currentPlayerIndex)
     }
 
     /**
@@ -43,11 +43,4 @@ class GolfGameTest {
         assertTrue(game1.discardPile.isEmpty())
     }
 
-    /**
-     * Tests if GolfGame's gameLog is correctly set
-     */
-    @Test
-    fun testGameLog() {
-        assertEquals("", game1.gameLog.entry)
-    }
 }

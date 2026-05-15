@@ -9,4 +9,6 @@ package entity
  * @property isRevealed whether the card is face up or not, initially set to false
  */
 
-data class Card (var isRevealed: Boolean =false , val suit: CardSuit, val value: CardValue)
+data class Card (val suit: CardSuit, val value: CardValue){
+    var isRevealed: Boolean =false
+}
