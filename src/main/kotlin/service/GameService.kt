@@ -140,7 +140,6 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
         // check if all cards in player's train are revealed
         if (player.train.all { it.isRevealed }) {
             player.finalRound = true
-            checkAllRevealed()
         }
     }
 
