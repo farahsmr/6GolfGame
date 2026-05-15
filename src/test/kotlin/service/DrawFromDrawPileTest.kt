@@ -81,6 +81,22 @@ class DrawCardFromDrawPileTest {
             rootService.playerActionService.drawCardFromDrawPile()
         }
     }
+    /** Test drawing resets after state changed */
+    @Test
+    fun testDrawCardFromDrawPileHandSet() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.gameState = GameState.NONE_REVEALED
+
+        val topCard = game.drawPile.first()
+
+        rootService.playerActionService.drawCardFromDrawPile()
+
+        // Test hand is the top card
+        assertEquals(topCard, player.hand)
+    }
 
     /** Test drawing a card with no game active */
     @Test

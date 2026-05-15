@@ -1,5 +1,6 @@
 package service
 
+import entity.GameState
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.*
@@ -50,8 +51,22 @@ class StartNewGameTest {
         // Test: Refresh was called
         assertTrue(testRefreshable.refreshAfterGameStartCalled)
     }
+    /** Test all players start with MUST_REVEAL_TWO state. */
+    @Test
+    fun testStartNewGamePlayerState() {
+        rootService.gameService.startNewGame(listOf("Alice", "Bob"), false, false)
+        val game = rootService.currentGame
+        checkNotNull(game)
 
-    /** Test starting a new game with random order. */
+        game.players.forEach { player ->
+            assertEquals(GameState.MUST_REVEAL_TWO, player.gameState)
+            assertNull(player.hand)
+            assertFalse(player.finalRound)
+            assertEquals(0, player.score)
+        }
+    }
+
+    /** Test starting a new game with random order */
     @Test
     fun testStartNewGameRandom() {
         assertDoesNotThrow {

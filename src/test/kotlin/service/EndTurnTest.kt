@@ -86,6 +86,21 @@ class EndTurnTest {
         }
     }
 
+    /** Test endTurn triggers endGame when all players finalRound */
+    @Test
+    fun testEndTurnTriggersEndGame() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        // Set all players to finalRound
+        game.players.forEach { it.finalRound = true }
+        game.players[game.currentPlayerIndex].gameState = GameState.ONE_REVEALED
+
+        assertDoesNotThrow { rootService.playerActionService.endTurn() }
+
+        assertTrue(testRefreshable.refreshAfterGameWonCalled)
+    }
+
     /** Test ending a turn with no game active. */
     @Test
     fun testEndTurnNoGame() {

@@ -57,6 +57,19 @@ class CheckAllRevealedTest {
         assertTrue(player.finalRound)
     }
 
+    /** Test checkAllRevealed with empty train */
+    @Test
+    fun testCheckAllRevealedEmptyTrain() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.train.clear()
+
+        assertDoesNotThrow { rootService.gameService.checkAllRevealed() }
+        assertTrue(player.finalRound)
+    }
+
     /** Test checkAllRevealed with no game active. */
     @Test
     fun testCheckAllRevealedNoGame() {

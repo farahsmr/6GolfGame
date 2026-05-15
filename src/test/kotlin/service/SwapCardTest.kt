@@ -111,4 +111,21 @@ class SwapCardTest {
         assertDoesNotThrow { rootService.playerActionService.swapCard(0) }
         assertEquals(GameState.MUST_END_TURN, player.gameState)
     }
+
+    /** Test new card is revealed after swap. */
+    @Test
+    fun testSwapCardNewCardRevealed() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.gameState = GameState.NONE_REVEALED
+
+        val newCard = Card(CardSuit.HEARTS, CardValue.ACE)
+        player.hand = newCard
+
+        rootService.playerActionService.swapCard(0)
+
+        assertTrue(player.train[0].isRevealed)
+    }
 }
