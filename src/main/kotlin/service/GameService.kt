@@ -178,25 +178,47 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
 
         game.players.forEach { player ->
             var score = 0
-
             for (col in 0..2) {
                 val topCard = player.train.getOrNull(col)
                 val bottomCard = player.train.getOrNull(col + 3)
 
-                // identical column = 0 points otherwise add each card's value
+                // identical column = 0 points
                 if (topCard != null && bottomCard != null && topCard.value == bottomCard.value) continue
 
-                listOfNotNull(topCard, bottomCard).forEach { card ->
-                    score += when (card.value) {
-                        CardValue.TWO -> -2
-                        CardValue.KING -> 0
-                        CardValue.ACE -> 1
-                        CardValue.JACK, CardValue.QUEEN -> 10
-                        else -> card.value.ordinal + 1
-                    }
+                // easier if done in enum CardValue
+                // add points for top card
+                score += when (topCard?.value) {
+                    CardValue.ACE -> 1
+                    CardValue.TWO -> -2
+                    CardValue.THREE -> 3
+                    CardValue.FOUR -> 4
+                    CardValue.FIVE -> 5
+                    CardValue.SIX -> 6
+                    CardValue.SEVEN -> 7
+                    CardValue.EIGHT -> 8
+                    CardValue.NINE -> 9
+                    CardValue.TEN -> 10
+                    CardValue.JACK, CardValue.QUEEN -> 10
+                    CardValue.KING -> 0
+                    null -> 0
+                }
+                // add points for bottom card
+                score += when (bottomCard?.value) {
+                    CardValue.ACE -> 1
+                    CardValue.TWO -> -2
+                    CardValue.THREE -> 3
+                    CardValue.FOUR -> 4
+                    CardValue.FIVE -> 5
+                    CardValue.SIX -> 6
+                    CardValue.SEVEN -> 7
+                    CardValue.EIGHT -> 8
+                    CardValue.NINE -> 9
+                    CardValue.TEN -> 10
+                    CardValue.JACK, CardValue.QUEEN -> 10
+                    CardValue.KING -> 0
+                    null -> 0
                 }
             }
-
             player.score = score
         }
     }
