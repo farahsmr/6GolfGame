@@ -97,4 +97,18 @@ class SwapCardTest {
             rootService.playerActionService.swapCard(0)
         }
     }
+
+    /** Test swapping a card drawn from discard pile */
+    @Test
+    fun testSwapCardFromDiscardPile() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.gameState = GameState.DREW_FROM_DISCARD
+        player.hand = Card(CardSuit.HEARTS, CardValue.ACE)
+
+        assertDoesNotThrow { rootService.playerActionService.swapCard(0) }
+        assertEquals(GameState.MUST_END_TURN, player.gameState)
+    }
 }

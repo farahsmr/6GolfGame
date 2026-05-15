@@ -75,6 +75,32 @@ class RevealCardTest {
         }
     }
 
+    /** Test revealing second card goes to MUST_END_TURN */
+    @Test
+    fun testRevealCardOneRevealedToMustEndTurn() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.gameState = GameState.ONE_REVEALED
+
+        assertDoesNotThrow { rootService.playerActionService.revealCard(0) }
+        assertEquals(GameState.MUST_END_TURN, player.gameState)
+    }
+
+    /** Test revealCard in wrong state  */
+    @Test
+    fun testRevealCardWrongState() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[game.currentPlayerIndex]
+        player.gameState = GameState.MUST_END_TURN
+
+        assertThrows<IllegalStateException> {
+            rootService.playerActionService.revealCard(0)
+        }
+    }
     /** Test revealing a card with no game active */
     @Test
     fun testRevealCardNoGame() {

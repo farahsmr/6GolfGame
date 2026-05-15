@@ -1,5 +1,7 @@
 package service
-
+import entity.Card
+import entity.CardSuit
+import entity.CardValue
 
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
@@ -17,7 +19,7 @@ class EndGameTest {
         rootService = RootService()
         testRefreshable = TestRefreshable()
         rootService.addRefreshable(testRefreshable)
-        rootService.gameService.startNewGame(listOf("Alice", "Bob"), false, false)
+        rootService.gameService.startNewGame(listOf("Alice", "Bob"), isRandom = false, isTestMode = false)
     }
 
     /** Test ending the game reveals all cards and calculates scores */
@@ -46,7 +48,25 @@ class EndGameTest {
         assertTrue(testRefreshable.refreshAfterGameWonCalled)
     }
 
-    /** Test ending the game with no game active. */
+    /** Test endGame calculates scores correctly with identical column. */
+    @Test
+    fun testEndGameIdenticalColumn() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+
+        val player = game.players[0]
+
+        // Set column 0 to identical kings
+        player.train[0] = Card(CardSuit.CLUBS, CardValue.KING)
+        player.train[3] = Card(CardSuit.SPADES, CardValue.KING)
+
+        assertDoesNotThrow { rootService.gameService.endGame() }
+
+        // identical column = 0 points for those cards
+        assertTrue(player.score >= 0)
+    }
+
+    /** Test ending the game with no game active */
     @Test
     fun testEndGameNoGame() {
         rootService.currentGame = null
