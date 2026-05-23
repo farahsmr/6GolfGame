@@ -13,7 +13,10 @@ import kotlin.test.*
 class EndGameTest {
     private lateinit var rootService: RootService
     private lateinit var testRefreshable: TestRefreshable
-
+    /**
+     * Sets up a new [RootService] and [TestRefreshable] before each test
+     * and starts a new game with two players (Alice, Bob).
+     */
     @BeforeTest
     fun setUp() {
         rootService = RootService()
@@ -38,11 +41,6 @@ class EndGameTest {
             }
         }
 
-        // Test: Scores are calculated
-        game.players.forEach { player ->
-            assertNotNull(player.score)
-        }
-
         // Test: Refreshes were called
         assertTrue(testRefreshable.refreshAfterScoresRevealedCalled)
         assertTrue(testRefreshable.refreshAfterGameWonCalled)
@@ -60,10 +58,16 @@ class EndGameTest {
         player.train[0] = Card(CardSuit.CLUBS, CardValue.KING)
         player.train[3] = Card(CardSuit.SPADES, CardValue.KING)
 
+        // Set remaining cards to known values
+        player.train[1] = Card(CardSuit.CLUBS, CardValue.ACE)
+        player.train[2] = Card(CardSuit.CLUBS, CardValue.THREE)
+        player.train[4] = Card(CardSuit.DIAMONDS, CardValue.FOUR)
+        player.train[5] = Card(CardSuit.SPADES, CardValue.TWO)
+
         assertDoesNotThrow { rootService.gameService.endGame() }
 
-        // identical column = 0 points for those cards
-        assertTrue(player.score >= 0)
+        // identical column 0 = 0 points, remaining 6 points
+        assertEquals(6, player.score)
     }
 
     /** Test endGame with test mode deck */

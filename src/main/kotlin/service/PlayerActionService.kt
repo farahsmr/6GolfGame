@@ -1,6 +1,5 @@
 package service
 
-import entity.Card
 import entity.GameState
 
 /**
@@ -36,6 +35,8 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
         // give it to the player
         player.hand = card
 
+        game.log.add("${player.playerName}: drew a card from draw pile")
+
         // notify the GUI
         onAllRefreshables { refreshAfterCardDrawn(card) }
     }
@@ -69,6 +70,8 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
 
         // update player state to drew from discard
         player.gameState = GameState.DREW_FROM_DISCARD
+
+        game.log.add("${player.playerName}: drew a card from discard pile")
 
         // notify the GUI
         onAllRefreshables { refreshAfterCardDrawn(card) }
@@ -110,6 +113,8 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
 
         // check if all cards are revealed (game might be over)
         rootService.gameService.checkAllRevealed()
+
+        game.log.add("${player.playerName}: revealed card at index $cardIndex")
 
         // notify the GUI
         onAllRefreshables { refreshAfterCardRevealed(cardIndex) }
@@ -155,6 +160,8 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
         // check if a row needs to be removed after swap
         rootService.gameService.checkRows(player)
 
+        game.log.add("${player.playerName}: swapped card at index $cardIndex")
+
         // notify the GUI
         onAllRefreshables { refreshAfterCardSwapped(newCard, cardIndex) }
     }
@@ -192,6 +199,8 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
         // update player state — must now reveal a card
         player.gameState = GameState.MUST_REVEAL_ONE
 
+        game.log.add("${player.playerName}: discarded card")
+
         // notify the GUI
         onAllRefreshables { refreshAfterCardDiscarded(card) }
     }
@@ -223,9 +232,11 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
         game.currentPlayerIndex = (game.currentPlayerIndex + 1) % game.players.size
 
         // check if final round is over
-        if (game.players.all { it.finalRound }) {
+        if (game.players[game.currentPlayerIndex].finalRound) {
             rootService.gameService.endGame()
         }
+
+        game.log.add("${player.playerName}: ended turn")
 
         // notify the GUI
         onAllRefreshables { refreshAfterTurnEnd() }

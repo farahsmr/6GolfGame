@@ -15,6 +15,12 @@ class SwapCardTest {
     private lateinit var rootService: RootService
     private lateinit var testRefreshable: TestRefreshable
 
+
+    /**
+     * Sets up a new [RootService] and [TestRefreshable] before each test
+     * and starts a new game with two players (Alice, Bob).
+     */
+
     @BeforeTest
     fun setUp() {
         rootService = RootService()

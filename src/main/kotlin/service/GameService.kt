@@ -113,6 +113,7 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
      *
      * @param rowIndex the index of the row to remove (0 = top row, 1 = bottom row)
      * @param player the player whose row is being removed
+     * @throws IllegalStateException if no game is currently active
      */
     private fun removeTripleRow(rowIndex: Int, player: Player) {
         // Get current game and check if it is still not running
@@ -132,6 +133,7 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
     }
     /**
      * Checks if all cards of the current player are revealed
+     * @throws IllegalStateException if no game is currently active
      */
     fun checkAllRevealed() {
         val game = checkNotNull(rootService.currentGame) { "No game is currently active" }
@@ -152,7 +154,7 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
     fun checkRows(player: Player) {
 
         // check row 0 (cards 0,1,2) and row 1 (cards 3,4,5)
-        for (rowIndex in 0..1) {
+        for (rowIndex in 1 downTo 0) {
             val startIndex = rowIndex * 3
 
             // only check row if it still has 3 cards
@@ -171,6 +173,7 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
 
     /**
      * Calculates the score for each player and stores it in their [Player.score] property.
+     * @throws IllegalStateException if no game is currently active
      */
     private fun calculateScores() {
         val game = checkNotNull(rootService.currentGame) { "No game is currently active" }
@@ -223,6 +226,7 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
     }
     /**
      * Ends the game, calculates final scores and reveals all remaining cards
+     * @throws IllegalStateException if no game is currently active
      */
     fun endGame() {
         val game = checkNotNull(rootService.currentGame) { "No game is currently active" }

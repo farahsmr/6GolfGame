@@ -14,7 +14,8 @@ class DrawCardFromDrawPileTest {
     private lateinit var testRefreshable: TestRefreshable
 
     /**
-     * Initialize service to set up the test environment. This function is executed before every test.
+     * Sets up a new [RootService] and [TestRefreshable] before each test
+     * and starts a new game with two players (Alice, Bob).
      */
     @BeforeTest
     fun setUp() {

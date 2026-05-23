@@ -46,6 +46,7 @@ class CheckRowsTest {
         assertTrue(testRefreshable.refreshAfterRowDiscardedCalled)
     }
 
+
     /** Test that a row without identical values is not removed */
     @Test
     fun testCheckRowsNoRemoval() {
@@ -53,14 +54,18 @@ class CheckRowsTest {
         checkNotNull(game)
 
         val player = game.players[0]
+
+        // Set row 0 to different values
+        player.train[0] = Card(CardSuit.CLUBS, CardValue.ACE)
+        player.train[1] = Card(CardSuit.SPADES, CardValue.KING)
+        player.train[2] = Card(CardSuit.HEARTS, CardValue.QUEEN)
+
         val trainSizeBefore = player.train.size
 
-        // Test: checkRows does not throw
         assertDoesNotThrow { rootService.gameService.checkRows(player) }
 
-        // Test: No row was removed since cards are random
-        // (very unlikely all 3 cards in a row have same value with shuffled deck)
-        assertTrue(player.train.size <= trainSizeBefore)
+        // Test: No row was removed
+        assertEquals(trainSizeBefore, player.train.size)
     }
 
     /** Test that row 1 with identical values is removed */
