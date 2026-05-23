@@ -126,6 +126,19 @@ class StartNewGameTest {
             rootService.gameService.startNewGame(listOf("Alice", ""), false, false)
         }
     }
+    /**
+     * Tests if [RootService.addRefreshables] correctly adds multiple refreshables.
+     */
+    @Test
+    fun testAddRefreshables() {
+        val refreshable1 = TestRefreshable()
+        val refreshable2 = TestRefreshable()
+        val rootService2 = RootService()
+        rootService2.addRefreshables(refreshable1, refreshable2)
+        rootService2.gameService.startNewGame(listOf("Alice", "Bob"), false, false)
+        assertTrue(refreshable1.refreshAfterGameStartCalled)
+        assertTrue(refreshable2.refreshAfterGameStartCalled)
+    }
 
     /** Test starting a new game when a game is already active. */
     @Test

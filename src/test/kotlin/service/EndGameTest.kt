@@ -82,6 +82,27 @@ class EndGameTest {
         assertDoesNotThrow { rootService.gameService.endGame() }
         assertTrue(testRefreshable.refreshAfterGameWonCalled)
     }
+    /**
+     * Tests if [GameService.endGame] correctly calculates scores for all card values.
+     */
+
+    @Test
+    fun testEndGameAllCardValues() {
+        val game = rootService.currentGame
+        checkNotNull(game)
+        val player = game.players[0]
+
+        player.train[0] = Card(CardSuit.CLUBS, CardValue.SIX)
+        player.train[1] = Card(CardSuit.CLUBS, CardValue.SEVEN)
+        player.train[2] = Card(CardSuit.CLUBS, CardValue.EIGHT)
+        player.train[3] = Card(CardSuit.SPADES, CardValue.NINE)
+        player.train[4] = Card(CardSuit.SPADES, CardValue.KING)
+        player.train[5] = Card(CardSuit.SPADES, CardValue.FIVE)
+
+        assertDoesNotThrow { rootService.gameService.endGame() }
+        // 6+7+8+9+0+5 = 35
+        assertEquals(35, player.score)
+    }
 
     /** Test ending the game with no game active */
     @Test
