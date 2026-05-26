@@ -113,7 +113,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
             ) {
                 try {
                     rootService.playerActionService.drawCardFromDrawPile()
-                } catch (e: Exception) {
+                } catch (e: IllegalArgumentException) {
                     println(e.message)
                 }
             }
@@ -141,7 +141,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
             ) {
                 try {
                     rootService.playerActionService.drawCardFromDiscardPile()
-                } catch (e: Exception) {
+                } catch (e: IllegalArgumentException) {
                     println(e.message)
                 }
             }
@@ -208,7 +208,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         onMouseClicked = {
             try {
                 rootService.playerActionService.discardCard()
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
                 println(e.message)
             }
         }
@@ -238,7 +238,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         onMouseClicked = {
             try {
                 rootService.playerActionService.endTurn()
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
                 println(e.message)
             }
         }
