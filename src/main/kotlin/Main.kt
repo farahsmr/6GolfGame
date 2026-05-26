@@ -1,11 +1,11 @@
-import gui.SopraApplication
+import gui.SixCardGolfApplication
 
 /**
- * Main entry point that starts the [SopraApplication]
+ * Main entry point that starts the [SixCardGolfApplication]
  *
  * Once the application is closed, it prints a message indicating the end of the application.
  */
-fun main() {
-    SopraApplication().show()
-    println("Application ended. Goodbye")
-}
+
+    fun main() {
+        SixCardGolfApplication().show()
+    }

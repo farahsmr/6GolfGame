@@ -20,6 +20,10 @@ kotlin {
 
 application {
     mainClass.set("MainKt")
+    applicationDefaultJvmArgs = listOf(
+        "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
+        "--add-opens", "java.desktop/java.awt=ALL-UNNAMED"
+    )
 }
 
 repositories {
