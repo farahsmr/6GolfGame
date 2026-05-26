@@ -74,7 +74,7 @@ class EndGameTest {
     @Test
     fun testEndGameTestMode() {
         rootService.currentGame = null
-        rootService.gameService.startNewGame(listOf("Alice", "Bob"), false, true)
+        rootService.gameService.startNewGame(listOf("Alice", "Bob"), isRandom = false, true)
 
         val game = rootService.currentGame
         checkNotNull(game)
@@ -100,10 +100,38 @@ class EndGameTest {
         player.train[5] = Card(CardSuit.SPADES, CardValue.FIVE)
 
         assertDoesNotThrow { rootService.gameService.endGame() }
-        // 6+7+8+9+0+5 = 35
+
         assertEquals(35, player.score)
     }
+    /** Testy all enum values  */
+    @Test
+    fun testEndGameCoverageForAllValues() {
+        val game = rootService.currentGame
+        checkNotNull(game)
 
+        // Setup Player 0 with the first 6 values
+        val p0 = game.players[0]
+        p0.train[0] = Card(CardSuit.CLUBS, CardValue.ACE)   //  1
+        p0.train[1] = Card(CardSuit.CLUBS, CardValue.TWO)   // -2
+        p0.train[2] = Card(CardSuit.CLUBS, CardValue.THREE) //  3
+        p0.train[3] = Card(CardSuit.CLUBS, CardValue.FOUR)  //  4
+        p0.train[4] = Card(CardSuit.CLUBS, CardValue.FIVE)  //  5
+        p0.train[5] = Card(CardSuit.CLUBS, CardValue.SIX)   //  6
+
+        // Setup Player 1 with the remaining 7 values
+        val p1 = game.players[1]
+        p1.train[0] = Card(CardSuit.DIAMONDS, CardValue.SEVEN) //  7
+        p1.train[1] = Card(CardSuit.DIAMONDS, CardValue.EIGHT) //  8
+        p1.train[2] = Card(CardSuit.DIAMONDS, CardValue.NINE)  //  9
+        p1.train[3] = Card(CardSuit.DIAMONDS, CardValue.TEN)   // 10
+        p1.train[4] = Card(CardSuit.DIAMONDS, CardValue.JACK)  // 10
+        p1.train[5] = Card(CardSuit.DIAMONDS, CardValue.QUEEN) // 10
+
+        assertDoesNotThrow { rootService.gameService.endGame() }
+
+        assertEquals(17, p0.score)
+        assertEquals(54, p1.score)
+    }
     /** Test ending the game with no game active */
     @Test
     fun testEndGameNoGame() {
