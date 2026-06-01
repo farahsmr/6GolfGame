@@ -159,6 +159,7 @@ class PlayerActionService(private val rootService: RootService) : AbstractRefres
 
         // check if a row needs to be removed after swap
         rootService.gameService.checkRows(player)
+        rootService.gameService.checkAllRevealed()
 
         game.log.add("${player.playerName}: swapped card at index $cardIndex")
 

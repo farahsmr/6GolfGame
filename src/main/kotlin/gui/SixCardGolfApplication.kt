@@ -3,6 +3,7 @@ package gui
 import service.RootService
 import service.Refreshable
 import tools.aqua.bgw.core.BoardGameApplication
+import tools.aqua.bgw.animation.DelayAnimation
 
 /**
  * Implementation of the BGW [BoardGameApplication] for the card game "6 Card Golf"
@@ -40,6 +41,7 @@ class SixCardGolfApplication : BoardGameApplication("6 Card Golf"), Refreshable 
 
         resultMenuScene.apply {
             playAgainButton.onMouseClicked = {
+                rootService.currentGame = null   // clears the finished game so startNewGame() won't throw
                 this@SixCardGolfApplication.showMenuScene(mainScene)
             }
             exitButton.onMouseClicked = {
@@ -64,6 +66,10 @@ class SixCardGolfApplication : BoardGameApplication("6 Card Golf"), Refreshable 
     }
 
     override fun refreshAfterGameWon() {
-        this.showMenuScene(resultMenuScene)
+        val delay = DelayAnimation(duration = 2000)
+        delay.onFinished = {
+            this.showMenuScene(resultMenuScene)
+        }
+        gameScene.playAnimation(delay)
     }
 }

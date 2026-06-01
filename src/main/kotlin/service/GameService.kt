@@ -178,7 +178,12 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
     private fun calculateScores() {
         val game = checkNotNull(rootService.currentGame) { "No game is currently active" }
 
-        game.players.forEach { player ->
+        game.players.forEach {
+            player ->
+            if (player.train.isEmpty()) {
+                player.score = Int.MIN_VALUE
+                return@forEach
+            }
             var score = 0
             for (col in 0..2) {
                 val topCard = player.train.getOrNull(col)
@@ -250,6 +255,8 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
         onAllRefreshables {
             refreshAfterScoresRevealed()
             refreshAfterGameWon()
+
+
         }
     }
 }

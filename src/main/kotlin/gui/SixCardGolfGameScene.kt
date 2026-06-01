@@ -160,20 +160,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         back = cardImageLoader.backImage
     ).apply { isVisible = false }
 
-    /** Draw pile label */
-    private val drawPileLabel = Label(
-        posX = 800, posY = 665, width = 130, height = 30,
-        text = "Draw Pile",
-        font = Font(size = 15, color = Color(255, 255, 255))
-    )
-
-    /** Discard pile label */
-    private val discardLabel = Label(
-        posX = 940, posY = 665, width = 130, height = 30,
-        text = "Discard",
-        font = Font(size = 15, color = Color(255, 255, 255))
-    )
-
     /** Hand card label: shown when player has a card in hand */
     private val handLabel = Label(
         posX = 855, posY = 215, width = 150, height = 30,
@@ -183,27 +169,23 @@ class SixCardGolfGameScene(private val rootService: RootService) :
 
     /** Current player indicator */
     private val currentPlayerLabel = Label(
-        posX = 700, posY = 580, width = 500, height = 45,
+        posX = 700, posY = 620, width = 500, height = 45,
         text = "Current Player: -",
-        font = Font(size = 24, fontWeight = Font.FontWeight.BOLD, color = Color(0, 0, 0))
+        font = Font(
+            size = 32,
+            fontWeight = Font.FontWeight.BOLD,
+            color = Color(241, 230, 178)
+    )
     )
 
-    /** Game state label : shows what the current player can do */
-    private val gameStateLabel = Label(
-        posX = 700, posY = 630, width = 500, height = 35,
-        text = "",
-        font = Font(size = 20, color = Color(200, 200, 200))
-    )
 
 
     /**
      * Discard card button: discards the drawn card back to discard pile.
      */
     private val discardCardButton = Button(
-        posX = 710, posY = 930, width = 170, height = 55,
-        text = "Discard Card",
-        font = Font(size = 16, color = Color(255, 255, 255)),
-        visual = ColorVisual(120, 40, 40)
+        posX = 770, posY = 930, width = 170, height = 55,
+        visual = ImageVisual("discard-button.png")
     ).apply {
         onMouseClicked = {
             try {
@@ -214,26 +196,10 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         }
     }
 
-
-    /** Swap card button */
-    private val swapCardButton = Button(
-        posX = 895, posY = 930, width = 170, height = 55,
-        text = "Swap Card",
-        font = Font(size = 16, color = Color(255, 255, 255)),
-        visual = ColorVisual(40, 80, 120)
-    ).apply {
-        onMouseClicked = {
-            // Swap is handled by clicking on a card directly
-            // This button is just a hint — actual swap happens on card click
-        }
-    }
-
     /** End turn button */
     private val endTurnButton = Button(
-        posX = 1080, posY = 930, width = 170, height = 55,
-        text = "End Turn",
-        font = Font(size = 16, color = Color(255, 255, 255)),
-        visual = ColorVisual(80, 80, 20)
+        posX = 980, posY = 930, width = 170, height = 55,
+        visual = ImageVisual("end-turn-button.png")
     ).apply {
         onMouseClicked = {
             try {
@@ -267,9 +233,9 @@ class SixCardGolfGameScene(private val rootService: RootService) :
             playerGrid0, playerGrid1, playerGrid2, playerGrid3,
             playerLabel0, playerLabel1, playerLabel2, playerLabel3,
             drawPileView, discardPileView, handCardView,
-            drawPileLabel, discardLabel, handLabel,
-            currentPlayerLabel, gameStateLabel,
-            discardCardButton, swapCardButton, endTurnButton,
+             handLabel,
+            currentPlayerLabel,
+            discardCardButton, endTurnButton,
             gameLogIcon, gameLogLabel
         )
     }
@@ -287,7 +253,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         when (game.players.size) {
             2 -> {
                 playerGrid0.posX = 400.0; playerGrid0.posY = 450.0
-                playerGrid1.posX = 1500.0; playerGrid1.posY = 450.0
+                playerGrid1.posX = 1520.0; playerGrid1.posY = 450.0
                 playerLabel0.posX = 270.0; playerLabel0.posY = 650.0
                 playerLabel1.posX = 1380.0; playerLabel1.posY = 650.0
             }
@@ -334,7 +300,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
 
         updateDiscardPile()
         updateCurrentPlayerLabel()
-        updateGameStateLabel()
         updateButtons()
         updateGameLog()
     }
@@ -374,7 +339,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
     /**
      * Handles clicking on a card in the current player's grid.
      *
-     * - [GameState.MUST_REVEAL_TWO], [GameState.MUST_REVEAL_ONE] → reveal card (Aufdeckrunde)
+     * - [GameState.MUST_REVEAL_TWO], [GameState.MUST_REVEAL_ONE] → reveal card
      * - [GameState.NONE_REVEALED], [GameState.ONE_REVEALED] → reveal card (normal turn)
      * - [GameState.MUST_END_TURN], [GameState.DREW_FROM_DISCARD] → swap card with hand
      *
@@ -433,22 +398,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         currentPlayerLabel.text = "Current Player: ${game.players[game.currentPlayerIndex].playerName}"
     }
 
-    private fun updateGameStateLabel() {
-        val game = rootService.currentGame ?: return
-        val player = game.players[game.currentPlayerIndex]
-        gameStateLabel.text = when (player.gameState) {
-            GameState.MUST_REVEAL_TWO -> "Reveal 2 cards to start"
-            GameState.MUST_REVEAL_ONE -> "Reveal 1 more card"
-            GameState.NONE_REVEALED -> {
-                if (player.hand != null) "Swap a card or Discard it"
-                else "Draw a card or reveal cards"
-            }
-
-            GameState.ONE_REVEALED -> "Reveal another card or End Turn"
-            GameState.MUST_END_TURN -> "Press End Turn"
-            GameState.DREW_FROM_DISCARD -> "Swap a card with your hand"
-        }
-    }
 
 
     /**
@@ -466,10 +415,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
 
         discardCardButton.isDisabled = player.hand == null ||
                 player.gameState != GameState.NONE_REVEALED
-
-        swapCardButton.isDisabled = player.hand == null ||
-                (player.gameState != GameState.NONE_REVEALED &&
-                        player.gameState != GameState.DREW_FROM_DISCARD)
     }
 
     /**
@@ -492,7 +437,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         }
 
         updateDiscardPile()
-        updateGameStateLabel()
         updateButtons()
         updateGameLog()
     }
@@ -508,7 +452,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
             cardMap.forward(card).showFront()
         }
 
-        updateGameStateLabel()
         updateButtons()
         updateGameLog()
     }
@@ -525,7 +468,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         handCardView.isVisible = false
         handLabel.isVisible = false
         updateDiscardPile()
-        updateGameStateLabel()
         updateButtons()
         updateGameLog()
     }
@@ -535,7 +477,6 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         handCardView.isVisible = false
         handLabel.isVisible = false
         updateCurrentPlayerLabel()
-        updateGameStateLabel()
         updateButtons()
         updateGameLog()
         // Reinitialize grids to show correct card states for next player
@@ -547,7 +488,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
     }
 
     override fun refreshAfterScoresRevealed() {
-        updateGameLog()
+        refreshAfterGameStart()
     }
 
     override fun refreshAfterGameWon() {

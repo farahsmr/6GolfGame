@@ -4,122 +4,98 @@ import service.RootService
 import service.Refreshable
 import tools.aqua.bgw.components.uicomponents.Button
 import tools.aqua.bgw.components.uicomponents.Label
-import tools.aqua.bgw.core.MenuScene
+import tools.aqua.bgw.core.Alignment
 import tools.aqua.bgw.core.Color
+import tools.aqua.bgw.core.MenuScene
 import tools.aqua.bgw.util.Font
 import tools.aqua.bgw.visual.ColorVisual
 import tools.aqua.bgw.visual.ImageVisual
 
 /**
- * [MenuScene] shown after the game ends with scores and winner.
+ * [MenuScene] shown after the game ends, displaying the final scores and the winner.
+ *
+ * Lowest score wins (standard Golf scoring). Only the winner — or all tied winners —
+ * is highlighted in gold; every other player is shown in a plain row.
  *
  * @param rootService [RootService] instance to access the service methods and entity layer
  */
 class ResultMenuScene(private val rootService: RootService) : MenuScene(1920, 1080), Refreshable {
 
-    /** Dark overlay for the center panel */
-    private val panelBackground = Label(
-        posX = 560, posY = 100,
-        width = 800, height = 700,
-        visual = ColorVisual(10, 40, 10, 220)
+    private val goldBg = ColorVisual(74, 58, 12, 235)
+    private val neutralBg = ColorVisual(22, 42, 26, 200)
+    private val goldText = Color(255, 215, 0)
+    private val neutralText = Color(210, 218, 210)
+    private val lineColor = ColorVisual(170, 140, 70)
+
+    /** Central translucent panel that frames the results. */
+    private val panel = Label(
+        posX = 560, posY = 110,
+        width = 800, height = 840,
+        visual = ColorVisual(8, 26, 14, 235)
     )
 
-    /** Trophy icon label */
-    private val trophyLabel = Label(
-        posX = 560, posY = 120,
-        width = 800, height = 80,
-        text = "🏆",
-        font = Font(size = 60)
-    )
-
-    /** Winner label */
-    private val winnerLabel = Label(
-        posX = 560, posY = 200,
-        width = 800, height = 80,
-        text = "Player 1 Wins!",
-        font = Font(size = 48, fontWeight = Font.FontWeight.BOLD, color = Color(255, 215, 0))
-    )
-
-    /** Divider line */
-    private val dividerLabel = Label(
-        posX = 600, posY = 290,
-        width = 720, height = 3,
-        visual = ColorVisual(100, 180, 100)
-    )
-
-    /** Score board header */
-    private val scoreHeader = Label(
-        posX = 560, posY = 305,
+    /** Small "GAME OVER" caption at the top of the panel. */
+    private val gameOverLabel = Label(
+        posX = 560, posY = 140,
         width = 800, height = 40,
+        text = "G A M E   O V E R",
+        font = Font(size = 24, fontWeight = Font.FontWeight.BOLD, color = Color(130, 180, 130)),
+        alignment = Alignment.CENTER
+    )
+
+    /** Trophy icon. */
+    private val trophyLabel = Label(
+        posX = 560, posY = 180,
+        width = 800, height = 90,
+        text = "🏆",
+        font = Font(size = 70),
+        alignment = Alignment.CENTER
+    )
+
+    /** Winner headline. */
+    private val winnerLabel = Label(
+        posX = 560, posY = 280,
+        width = 800, height = 70,
+        text = "",
+        font = Font(size = 46, fontWeight = Font.FontWeight.BOLD, color = goldText),
+        alignment = Alignment.CENTER
+    )
+
+    private val divider1 = Label(
+        posX = 620, posY = 370, width = 680, height = 2,
+        visual = lineColor
+    )
+
+    /** "FINAL SCORES" section header. */
+    private val scoreHeader = Label(
+        posX = 560, posY = 388,
+        width = 800, height = 36,
         text = "FINAL SCORES",
-        font = Font(size = 20, fontWeight = Font.FontWeight.BOLD, color = Color(100, 200, 100))
+        font = Font(size = 22, fontWeight = Font.FontWeight.BOLD, color = Color(150, 200, 150)),
+        alignment = Alignment.CENTER
     )
 
-    /** Score label backgrounds */
-    private val scoreBg0 = Label(
-        posX = 590, posY = 355, width = 740, height = 55,
-        visual = ColorVisual(20, 80, 20, 200)
-    )
-    private val scoreBg1 = Label(
-        posX = 590, posY = 420, width = 740, height = 55,
-        visual = ColorVisual(15, 60, 15, 200)
-    )
-    private val scoreBg2 = Label(
-        posX = 590, posY = 485, width = 740, height = 55,
-        visual = ColorVisual(15, 60, 15, 200)
-    ).apply { isVisible = false }
-    private val scoreBg3 = Label(
-        posX = 590, posY = 550, width = 740, height = 55,
-        visual = ColorVisual(15, 60, 15, 200)
-    ).apply { isVisible = false }
+    // One row per player: a background, the name (left) and the score (right).
+    private val rowBgs = mutableListOf<Label>()
+    private val nameLabels = mutableListOf<Label>()
+    private val scoreLabels = mutableListOf<Label>()
 
-    /** Score labels */
-    private val scoreLabel0 = Label(
-        posX = 600, posY = 360,
-        width = 720, height = 45,
-        text = "⭐1-   Player 1 :                         0 pts",
-        font = Font(size = 22, fontWeight = Font.FontWeight.BOLD, color = Color(255, 215, 0))
-    )
-    private val scoreLabel1 = Label(
-        posX = 600, posY = 425,
-        width = 720, height = 45,
-        text = "2-      Player 2 :                        0 pts",
-        font = Font(size = 22, color = Color(220, 220, 220))
-    )
-    private val scoreLabel2 = Label(
-        posX = 600, posY = 490,
-        width = 720, height = 45,
-        text = "3-      Player 3 :                         0 pts",
-        font = Font(size = 22, color = Color(220, 220, 220))
-    ).apply { isVisible = false }
-    private val scoreLabel3 = Label(
-        posX = 600, posY = 555,
-        width = 720, height = 45,
-        text = "4-      Player 4 :                         0 pts",
-        font = Font(size = 22, color = Color(220, 220, 220))
-    ).apply { isVisible = false }
-
-    private val scoreLabels = listOf(scoreLabel0, scoreLabel1, scoreLabel2, scoreLabel3)
-    private val scoreBgs = listOf(scoreBg0, scoreBg1, scoreBg2, scoreBg3)
-
-    /** Second divider */
-    private val dividerLabel2 = Label(
-        posX = 600, posY = 625,
-        width = 720, height = 3,
-        visual = ColorVisual(100, 180, 100)
+    private val divider2 = Label(
+        posX = 620, posY = 780, width = 680, height = 2,
+        visual = lineColor
     )
 
-    /** Play Again button */
+    /** Play Again button (wired up by [SixCardGolfApplication]). */
     val playAgainButton = Button(
-        posX = 720, posY = 680,
-        width = 200, height = 60,
+        posX = 690, posY = 820,
+        width = 220, height = 70,
         visual = ImageVisual("play-again-button.png")
     )
 
-    /** Exit button */
+    /** Exit button (wired up by [SixCardGolfApplication]). */
     val exitButton = Button(
-        posX = 970, posY = 680,
-        width = 200, height = 60,
+        posX = 1010, posY = 820,
+        width = 220, height = 70,
         visual = ImageVisual("exit-button.png")
     )
 
@@ -127,51 +103,79 @@ class ResultMenuScene(private val rootService: RootService) : MenuScene(1920, 10
         background = ImageVisual("background.png")
         backgroundOpacity = 1.0
 
-        addComponents(
-            panelBackground,
-            trophyLabel,
-            winnerLabel,
-            dividerLabel,
-            scoreHeader,
-            scoreBg0, scoreBg1, scoreBg2, scoreBg3,
-            scoreLabel0, scoreLabel1, scoreLabel2, scoreLabel3,
-            dividerLabel2,
-            playAgainButton, exitButton
-        )
+        addComponents(panel, gameOverLabel, trophyLabel, winnerLabel, divider1, scoreHeader)
+
+        // Build the four score rows up front; visibility/colour is set per game.
+        for (i in 0 until 4) {
+            val rowY = 450 + i * 80
+
+            val bg = Label(
+                posX = 620, posY = rowY, width = 680, height = 66,
+                visual = neutralBg
+            ).apply { isVisible = false }
+
+            val name = Label(
+                posX = 660, posY = rowY, width = 420, height = 66,
+                text = "",
+                font = Font(size = 28, color = neutralText),
+                alignment = Alignment.CENTER_LEFT
+            ).apply { isVisible = false }
+
+            val score = Label(
+                posX = 1100, posY = rowY, width = 180, height = 66,
+                text = "",
+                font = Font(size = 30, color = neutralText),
+                alignment = Alignment.CENTER_RIGHT
+            ).apply { isVisible = false }
+
+            rowBgs += bg
+            nameLabels += name
+            scoreLabels += score
+            addComponents(bg, name, score)
+        }
+
+        addComponents(divider2, playAgainButton, exitButton)
     }
 
     /**
-     * Called after game is won: updates scores and winner label
+     * Called after the game is won: fills in the winner headline and the score rows,
+     * sorted from lowest (winner) to highest score. All players sharing the lowest
+     * score are treated as winners and shown in gold.
      */
     override fun refreshAfterGameWon() {
         val game = rootService.currentGame ?: return
 
-        // Sort players by score ascending (lowest score wins)
+        // Lowest score wins; there may be a tie.
         val sortedPlayers = game.players.sortedBy { it.score }
+        val bestScore = sortedPlayers.first().score
+        val winners = sortedPlayers.filter { it.score == bestScore }
 
-        // Update winner label
-        winnerLabel.text = "${sortedPlayers[0].playerName} Wins!"
+        winnerLabel.text = if (winners.size == 1) {
+            "${winners.first().playerName} wins!"
+        } else {
+            "${winners.joinToString(", ") { it.playerName }} win!"
+        }
 
-        // Update score labels
-        scoreLabels.forEachIndexed { index, label ->
-            val bg = scoreBgs[index]
-            if (index < sortedPlayers.size) {
-                val player = sortedPlayers[index]
-                val rank = index + 1
-                val star = if (index == 0) "⭐" else "   "
-                label.text = "$rank $star  ${player.playerName.padEnd(20)} ${player.score} pts"
-                label.isVisible = true
-                bg.isVisible = true
+        for (i in 0 until 4) {
+            val show = i < sortedPlayers.size
+            rowBgs[i].isVisible = show
+            nameLabels[i].isVisible = show
+            scoreLabels[i].isVisible = show
 
-                // Winner name becomes gold
-                if (index == 0) {
-                    label.font = Font(size = 22, fontWeight = Font.FontWeight.BOLD, color = Color(255, 215, 0))
-                } else {
-                    label.font = Font(size = 22, color = Color(220, 220, 220))
-                }
-            } else {
-                label.isVisible = false
-                bg.isVisible = false
+            if (show) {
+                val player = sortedPlayers[i]
+                val isWinner = player.score == bestScore
+
+                rowBgs[i].visual = if (isWinner) goldBg else neutralBg
+                val color = if (isWinner) goldText else neutralText
+                val weight = if (isWinner) Font.FontWeight.BOLD else Font.FontWeight.NORMAL
+
+                nameLabels[i].text = player.playerName
+                nameLabels[i].font = Font(size = 28, fontWeight = weight, color = color)
+
+                scoreLabels[i].text =
+                    if (player.score == Int.MIN_VALUE) "-∞ pts" else "${player.score} pts"
+                scoreLabels[i].font = Font(size = 30, fontWeight = weight, color = color)
             }
         }
     }

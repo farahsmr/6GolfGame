@@ -10,7 +10,7 @@ import entity.GolfGame
  */
 class RootService{
     /**
-     * Main class of the service layer for the War card game. Provides access
+     * Main class of the service layer for the SixCardGolf game. Provides access
      * to all other service classes and holds the [currentGame] state for these
      * services to access.
      */
