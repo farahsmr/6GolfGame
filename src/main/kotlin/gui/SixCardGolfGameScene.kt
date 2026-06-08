@@ -188,6 +188,8 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         visual = ImageVisual("discard-button.png")
     ).apply {
         onMouseClicked = {
+            val game = rootService.currentGame
+            val player = game?.players?.get(game.currentPlayerIndex)
             try {
                 rootService.playerActionService.discardCard()
             } catch (e: IllegalArgumentException) {
@@ -240,7 +242,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         )
     }
 
-    // region Refreshes
+
 
     /**
      * Called after a new game starts.
@@ -281,10 +283,10 @@ class SixCardGolfGameScene(private val rootService: RootService) :
             }
         }
         if (game.players.size >= 3) {
-            handCardView.posX = 1550.0
-            handCardView.posY = 230.0
-            handLabel.posX = 1540.0
-            handLabel.posY = 200.0
+            handCardView.posX = 1750.0
+            handCardView.posY = 400.0
+            handLabel.posX = 1740.0
+            handLabel.posY = 365.0
         }
         // Show only active player grids and labels
         playerGrids.forEachIndexed { i, grid -> grid.isVisible = i < game.players.size }
@@ -354,29 +356,19 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         runCatching {
             when (player.gameState) {
                 GameState.MUST_REVEAL_TWO,
-                GameState.MUST_REVEAL_ONE -> {
+                GameState.MUST_REVEAL_ONE ->
                     rootService.playerActionService.revealCard(cardIndex)
-                }
-
-                GameState.NONE_REVEALED -> {
-                    // if player has hand card → swap, otherwise reveal
+                GameState.NONE_REVEALED ->
                     if (player.hand != null) {
                         rootService.playerActionService.swapCard(cardIndex)
                     } else {
                         rootService.playerActionService.revealCard(cardIndex)
                     }
-                }
-
-                GameState.ONE_REVEALED -> {
+                GameState.ONE_REVEALED ->
                     rootService.playerActionService.revealCard(cardIndex)
-                }
-
                 GameState.MUST_END_TURN,
-                GameState.DREW_FROM_DISCARD -> {
-                    if (player.hand != null) {
-                        rootService.playerActionService.swapCard(cardIndex)
-                    }
-                }
+                GameState.DREW_FROM_DISCARD ->
+                    if (player.hand != null) rootService.playerActionService.swapCard(cardIndex)
             }
         }.onFailure { println(it.message) }
     }
@@ -430,6 +422,7 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         val player = game.players[game.currentPlayerIndex]
 
         player.hand?.let { hand ->
+            handCardView.showBack() // reset first
             handCardView.frontVisual = cardImageLoader.frontImageFor(hand.suit, hand.value)
             handCardView.showFront()
             handCardView.isVisible = true
@@ -444,12 +437,15 @@ class SixCardGolfGameScene(private val rootService: RootService) :
 
     override fun refreshAfterCardRevealed(cardIndex: Int) {
         val game = rootService.currentGame ?: return
-        val player = game.players[game.currentPlayerIndex]
+        val playerIndex = game.currentPlayerIndex  // capture immediately
+        val player = game.players[playerIndex]
 
-        // Flip card to front
         if (cardIndex < player.train.size) {
             val card = player.train[cardIndex]
-            cardMap.forward(card).showFront()
+            val grid = playerGrids[playerIndex]
+            val cardView = grid[cardIndex % 3, cardIndex / 3]
+            cardView?.frontVisual = cardImageLoader.frontImageFor(card.suit, card.value)
+            cardView?.showFront()
         }
 
         updateButtons()
@@ -457,10 +453,26 @@ class SixCardGolfGameScene(private val rootService: RootService) :
     }
 
     override fun refreshAfterCardSwapped(newCard: Card, cardIndex: Int) {
-        // Hide hand card and reinitialize grids
+        val game = rootService.currentGame ?: return
+        val playerIndex = game.currentPlayerIndex
+        val grid = playerGrids[playerIndex]
+
+        val cardView = grid[cardIndex % 3, cardIndex / 3]
+        cardView?.frontVisual = cardImageLoader.frontImageFor(newCard.suit, newCard.value)
+        cardView?.showFront()
+
         handCardView.isVisible = false
         handLabel.isVisible = false
-        refreshAfterGameStart()
+        updateDiscardPile()
+        updateButtons()
+        updateGameLog()
+
+        // Re-register click handlers after swap
+        val player = game.players[playerIndex]
+        player.train.forEachIndexed { index, _ ->
+            val cardV = grid[index % 3, index / 3]
+            cardV?.onMouseClicked = { handleCardClick(playerIndex, index) }
+        }
     }
 
     override fun refreshAfterCardDiscarded(card: Card) {
@@ -471,30 +483,68 @@ class SixCardGolfGameScene(private val rootService: RootService) :
         updateButtons()
         updateGameLog()
     }
-
     override fun refreshAfterTurnEnd() {
-        // Hide hand card and update for next player
         handCardView.isVisible = false
         handLabel.isVisible = false
         updateCurrentPlayerLabel()
         updateButtons()
         updateGameLog()
-        // Reinitialize grids to show correct card states for next player
-        refreshAfterGameStart()
+
+        val game = rootService.currentGame ?: return
+        val newPlayerIndex = game.currentPlayerIndex
+        val newPlayer = game.players[newPlayerIndex]
+
+        // Only re-register clicks the new current player
+        newPlayer.train.forEachIndexed { cardIndex, card ->
+            val grid = playerGrids[newPlayerIndex]
+            val cardView = grid[cardIndex % 3, cardIndex / 3]
+            if (cardView != null) {
+                cardView.isDisabled = false
+                cardView.onMouseClicked = { handleCardClick(newPlayerIndex, cardIndex) }
+            }
+        }
     }
 
+
     override fun refreshAfterRowDiscarded(rowIndex: Int) {
-        refreshAfterGameStart()
+        val game = rootService.currentGame ?: return
+        val playerIndex = game.currentPlayerIndex
+        val grid = playerGrids[playerIndex]
+        val startIndex = rowIndex * 3
+
+        // Hide the 3 cards of the discarded row
+        for (i in startIndex until startIndex + 3) {
+            val cardView = grid[i % 3, i / 3]
+            cardView?.isVisible = false
+            cardView?.isDisabled = true
+        }
+
+        // Re-register click handlers for remaining cards
+        val player = game.players[playerIndex]
+        player.train.forEachIndexed { cardIndex, card ->
+            val cardView = grid[cardIndex % 3, cardIndex / 3]
+            cardView?.isDisabled = false
+            cardView?.onMouseClicked = { handleCardClick(playerIndex, cardIndex) }
+        }
+
+        updateDiscardPile()
+        updateGameLog()
     }
 
     override fun refreshAfterScoresRevealed() {
-        refreshAfterGameStart()
+        val game = rootService.currentGame ?: return
+        game.players.forEachIndexed { playerIndex, player ->
+            player.train.forEachIndexed { cardIndex, card ->
+                val grid = playerGrids[playerIndex]
+                val cardView = grid[cardIndex % 3, cardIndex / 3]
+                cardView?.frontVisual = cardImageLoader.frontImageFor(card.suit, card.value)
+                cardView?.showFront()
+                cardView?.isVisible = true
+            }
+        }
     }
-
     override fun refreshAfterGameWon() {
         updateGameLog()
     }
 
-//known issue : Currently re-initializes the entire scene everytime
-//fix: Implement an update function ( updatePlayerGrid)
 }

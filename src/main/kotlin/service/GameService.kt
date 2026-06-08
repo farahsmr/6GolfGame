@@ -136,11 +136,9 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
      * @throws IllegalStateException if no game is currently active
      */
     fun checkAllRevealed() {
-        val game = checkNotNull(rootService.currentGame) { "No game is currently active" }
+        val game = checkNotNull(rootService.currentGame)
         val player = game.players[game.currentPlayerIndex]
-
-        // check if all cards in player's train are revealed
-        if (player.train.all { it.isRevealed }) {
+        if (player.train.isEmpty() || player.train.all { it.isRevealed }) {
             player.finalRound = true
         }
     }
@@ -164,7 +162,8 @@ class GameService(private val rootService: RootService) : AbstractRefreshingServ
                 val card3 = player.train[startIndex + 2]
 
                 // if all 3 cards in row have same value remove the row
-                if (card1.value == card2.value && card2.value == card3.value) {
+                if (card1.isRevealed && card2.isRevealed && card3.isRevealed &&
+                    card1.value == card2.value && card2.value == card3.value) {
                     removeTripleRow(rowIndex, player)
                 }
             }

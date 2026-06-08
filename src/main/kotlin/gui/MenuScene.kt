@@ -129,6 +129,46 @@ class MenuScene(private val rootService: RootService) : MenuScene(1920, 1080), R
             )
         }
     }
+    /**
+     * Resets the [MenuScene] to its default state with 2 players
+     * Called when returning to the menu after a game ends
+     */
+    fun reset() {
+        playerCount = 2
+
+        // Reset card3 to + state and re-register click handler
+        card3.visual = backVisual
+        card3.text = "+"
+        card3.onMouseClicked = {
+            if (playerCount == 2) {
+                card3.visual = diamondsVisual
+                card3.text = ""
+                player3Input.isVisible = true
+                playerCount = 3
+            }
+        }
+
+        // Reset card4 to + state and re-register click handler
+        card4.visual = backVisual
+        card4.text = "+"
+        card4.onMouseClicked = {
+            if (playerCount == 3) {
+                card4.visual = spadesVisual
+                card4.text = ""
+                player4Input.isVisible = true
+                playerCount = 4
+                card4.onMouseClicked = null
+            }
+        }
+
+        // Hide and clear player 3 input
+        player3Input.isVisible = false
+        player3Input.text = ""
+
+        // Hide and clear player 4 input
+        player4Input.isVisible = false
+        player4Input.text = ""
+    }
 
     init {
         background = ImageVisual("background.png")

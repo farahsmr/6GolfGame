@@ -25,6 +25,7 @@ class SixCardGolfApplication : BoardGameApplication("6 Card Golf"), Refreshable 
     // This menu scene is shown after application start
     private val mainScene: MainScene = MainScene(rootService).apply {
         startButton.onMouseClicked = {
+            menuScene.reset()
             this@SixCardGolfApplication.showMenuScene(menuScene)
         }
         exitButton.onMouseClicked = {
